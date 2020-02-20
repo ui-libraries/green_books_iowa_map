@@ -1,0 +1,890 @@
+<html lang='en'>
+
+<head>
+  <title>Green Book Amenities, Iowa: 1940-1960</title>
+  <meta charset="utf-8" />
+  <link href="https://fonts.googleapis.com/css?family=Cutive+Mono|Merriweather:700|Muli:400,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin="" />
+  <link href='https://api.mapbox.com/mapbox-assembly/v0.8.0/assembly.min.css' rel='stylesheet'>
+  <link href='https://api.mapbox.com/mapbox.js/v3.0.1/mapbox.css' rel='stylesheet'>
+  <!--[if lte IE 8]>
+      <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.2/leaflet.ie.css" />
+  <![endif]-->
+  <script src="https://kit.fontawesome.com/3625013d3b.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="css/leaflet.extra-markers.min.css">
+  <style type="text/css">
+  <style>
+    body {
+      margin: 0px;
+      height: 100%;
+      width: 100%;
+    }
+
+    /* Add banner to header background */
+    header {
+      /*background-image: url('images/horserace.png');*/
+      position: fixed;
+      width: 100%;
+      height: 100px;
+      background-color: #000000;
+      box-shadow: 0px 5px 5px black;
+      z-index: 800;
+    }
+
+    /* Set and style fonts for text in map */
+    h1 {
+      font-family: 'Muli', sans-serif;
+      font-size: 30px;
+      display: inline-block;
+      color: #ffff00;
+      margin-top: 0.5em;
+      margin-bottom: 0.0em;
+      margin-left: 0.5em;
+      margin-right: 0;
+      font-weight: normal;
+    }
+
+    h2 {
+      font-family: 'Merriweather', serif;
+      font-size: 13px;
+      display: inline-block;
+      color: #f7f4ea;
+      margin-top: 0.25em;
+      margin-bottom: 0.0em;
+      margin-left: 1.25em;
+      margin-right: 0;
+      font-weight: normal;
+    }
+
+    h3 {
+      font-family: 'Merriweather', sans-serif;
+      font-size: 16px;
+      display: block;
+      margin-top: 0.0em;
+      margin-bottom: 0.0em;
+      margin-left: 0;
+      margin-right: 0;
+      font-weight: normal;
+    }
+
+    h4 {
+      font-family: 'Muli', sans-serif;
+      font-size: 12px;
+      display: block;
+      margin-top: 0.0em;
+      margin-bottom: 0.0em;
+      margin-left: 0;
+      margin-right: 0;
+      font-weight: normal;
+    }
+
+    h5 {
+      font-size: 10px;
+      font-family: 'Cutive Mono', monospace;
+      font-style: italic;
+      display: inline-block;
+      margin-top: 0.0em;
+      margin-bottom: 0.0em;
+    }
+
+    p {
+      font-family: 'Muli', sans-serif;
+    }
+
+    b {
+      font-family: 'Cutive Mono', monospace;
+      display: inline-block;
+      margin-top: 0.0em;
+      margin-bottom: 0.0em;
+    }
+
+    /* Set map parameters */
+    #map {
+      position: fixed;
+      top: 100px;
+      bottom: 0px;
+      width: 100%;
+    }
+
+    #slider {
+      position: absolute;
+      height: 43px;
+      bottom: 0px;
+      left: 120px;
+      z-index: 1000;
+      background-color: #fdf5e6;
+      border-left: 1px solid;
+      border-right: 1px solid;
+      border-top: 1px solid;
+      border-bottom: 1px solid
+    }
+
+    #temporal {
+      background-color: #fdf5e6
+    }
+
+    /* Set background colors for popup windows */
+    .leaflet-popup-content-wrapper {
+      background-color: #f2eecb;
+    }
+
+    .leaflet-popup-tip {
+      display: none;
+    }
+
+    /* Set background color of layer control */
+    .leaflet-control-layers-expanded {
+      font-family: 'Muli', sans-serif;
+      background-color: #f2eecb;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Green Book Amenities, Iowa: 1940-1960</h1><br>
+    <h2>Map by <a href='https://jebowe3.github.io/Map-Portfolio/' style='color:#f7f4ea;'>Jay Bowen</a>, 2020 | Markers customized with <a href='https://github.com/coryasilva/Leaflet.ExtraMarkers' style='color:#f7f4ea;'>Leaflet Extra Markers</a> and
+      <a href='https://github.com/lvoogdt/Leaflet.awesome-markers' style='color:#f7f4ea;'>Leaflet Awesome Markers</a>, based on <a href='https://fontawesome.com/license' style='color:#f7f4ea;'>Font Awesome</a> icons</h2>
+  </header>
+
+  <!-- map -->
+  <div id="map"></div>
+
+  <!-- ui slider -->
+  <div id='slider' class='range w300 round py6 border--gray-light px12 leaflet-control'>
+    <input type='range' min="1940" max="1960" value="1940" step="10" class="slider" />
+  </div>
+  <!-- end slider -->
+
+  <!-- temporal legend -->
+  <div id='temporal' class='py6 px12 border border--gray-light round bottom left wmax200'>
+    <h3 class='txt-bold'>Year: <span></span></h3>
+  </div>
+  <!-- end temporal -->
+
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js" integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og==" crossorigin=""></script>
+  <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+  <script src='https://api.mapbox.com/mapbox.js/v3.2.1/mapbox.js'></script>
+  <script src='https://api.mapbox.com/mapbox-assembly/v0.8.0/assembly.js'></script>
+  <script src="leaflet_awesome_markers.js"></script>
+  <script src="js/leaflet.extra-markers.min.js"></script>
+
+  <script>
+
+    // add mapbox Iowa_1950 tiles
+    L.mapbox.accessToken = 'pk.eyJ1IjoiamVib3dlMyIsImEiOiJjajY1M3l6bWIxeTQwMndtcXRuN3F4ejFpIn0.aE7P49pqaBKjy2HTOw-tgw'; // enter Mapbox access token
+
+    // define the basemap using the thunderforest pioneer map and set minimum and maximum zoom levels
+    var basemap = L.tileLayer('https://tile.thunderforest.com/pioneer/{z}/{x}/{y}.png?apikey=dd2dca516d114fd89c0b1403358cbfa8', {
+      attribution: '&copy; <a href="http://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      apikey: '<dd2dca516d114fd89c0b1403358cbfa8>',
+      maxZoom: 16,
+      minZoom: 7,
+    });
+
+    var overmap = L.mapbox.styleLayer('mapbox://styles/jebowe3/ck6vbdt990eiy1intt77mioei');
+
+    // center map on Iowa coordinates and set initial zoom
+    var map = L.map('map', {
+      maxBounds: L.latLngBounds([44, -88.0], [40.0, -99.0]),
+      layers: [basemap, overmap]
+    }).setView([42, -93], 8);
+
+    var baseMaps = {
+      "Pioneer": basemap,
+      "1950 Road Map": overmap
+    };
+
+    // add a scale bar
+    L.control.scale({position: 'bottomright'}).addTo(map);
+
+    // load the data asynchronously
+    d3.queue()
+      .defer(d3.json, 'data/auto_iowa.geojson')
+      .defer(d3.json, 'data/beauty_iowa.geojson')
+      .defer(d3.json, 'data/drug_iowa.geojson')
+      .defer(d3.json, 'data/garages_iowa.geojson')
+      .defer(d3.json, 'data/hotels_iowa.geojson')
+      .defer(d3.json, 'data/restaurants_iowa.geojson')
+      .defer(d3.json, 'data/service_iowa.geojson')
+      .defer(d3.json, 'data/tailors_iowa.geojson')
+      .defer(d3.json, 'data/taverns_iowa.geojson')
+      .defer(d3.json, 'data/tourist_iowa.geojson')
+      .await(drawMap);
+
+    // define drawMap function
+    function drawMap(err, autos, beaut, drug, garage, hotel, food, gas, tailor, bar, thome) {
+
+      // send geojsons to drawIcons function
+      drawIcons(autos, beaut, drug, garage, hotel, food, gas, tailor, bar, thome);
+
+    }; // end drawMap function
+
+    // add a temporal legend in sync with the UI slider
+    function createTemporalLegend(currentYear) {
+
+      var temporalLegend = L.control({
+        position: 'bottomleft' // place the temporal legend at bottom left corner
+      });
+
+      // when added to the map
+      temporalLegend.onAdd = function(map) {
+
+        var div = L.DomUtil.get("temporal"); // get the style settings
+
+        // disable the mouse events
+        L.DomEvent.disableScrollPropagation(div);
+        L.DomEvent.disableClickPropagation(div);
+
+        return div; // return the style settings
+
+      }
+
+      $('#temporal span').html(currentYear); // change grade value to that currently selected by UI slider
+
+      temporalLegend.addTo(map); // add the temporal legend to the map
+
+    }; // end createTemporalLegend function
+
+    // add a UI slider
+    function sequenceUI(cars, beauty, drugs, hotels, foods, gastas, tailors, taverns, thomes, garages) {
+
+      // create Leaflet control for the slider
+      var sliderControl = L.control({
+        position: 'bottomleft',
+        follow: true
+      });
+
+      // create Leaflet control for the slider
+      var sliderControl = L.control({
+        position: 'bottomleft',
+        follow: true
+      });
+
+      // add controls to the slider
+      sliderControl.onAdd = function(map) {
+
+        var controls = L.DomUtil.get("slider");
+
+        L.DomEvent.disableScrollPropagation(controls);
+        L.DomEvent.disableClickPropagation(controls);
+
+        return controls;
+
+      }
+
+      // add the control to the map
+      sliderControl.addTo(map);
+
+      $('.slider')
+        .on('input change', function() {
+          var currentYear = $(this).val(); // identifies the year selected
+          createTemporalLegend(currentYear); // create the temporal legend to show the year selected by the slider
+          updateIcons(cars, beauty, drugs, hotels, foods, gastas, tailors, taverns, thomes, garages, currentYear); // update the icons to show according to their year
+        });
+
+    }; // End sequenceUI function
+
+    // draw the icons
+    function drawIcons(autos, beaut, drug, garage, hotel, food, gas, tailor, bar, thome) {
+
+      // create cars Leaflet GeoJSON layer and style with Awesome Markers
+      var cars = L.geoJson(autos, {
+        pointToLayer: function(feature, ll) {
+          return L.marker(ll, {
+            icon: L.ExtraMarkers.icon({
+              icon: 'fas fa-car',
+              prefix: 'fa',
+              markerColor: 'purple',
+              iconColor: 'white'
+            })
+          })
+        }
+      });
+
+      // create beauty Leaflet GeoJSON layer and style with Awesome Markers
+      var beauty = L.geoJson(beaut, {
+        pointToLayer: function(feature, ll) {
+          return L.marker(ll, {
+            icon: L.ExtraMarkers.icon({
+              icon: 'fas fa-cut',
+              prefix: 'fa',
+              markerColor: 'blue',
+              iconColor: 'white'
+            })
+          })
+        }
+      });
+
+      // create drugs Leaflet GeoJSON layer and style with Awesome Markers
+      var drugs = L.geoJson(drug, {
+        pointToLayer: function(feature, ll) {
+          return L.marker(ll, {
+            icon: L.ExtraMarkers.icon({
+              icon: 'fas fa-prescription-bottle-alt',
+              prefix: 'fa',
+              markerColor: 'red',
+              iconColor: 'white'
+            })
+          })
+        }
+      });
+
+      // create garages Leaflet GeoJSON layer and style with Awesome Markers
+      var garages = L.geoJson(garage, {
+        pointToLayer: function(feature, ll) {
+          return L.marker(ll, {
+            icon: L.ExtraMarkers.icon({
+              icon: 'fas fa-warehouse',
+              prefix: 'fa',
+              markerColor: 'green',
+              iconColor: 'white'
+            })
+          })
+        }
+      });
+
+      // create hotels Leaflet GeoJSON layer and style with Awesome Markers
+      var hotels = L.geoJson(hotel, {
+        pointToLayer: function(feature, ll) {
+          return L.marker(ll, {
+            icon: L.ExtraMarkers.icon({
+              icon: 'fas fa-bed',
+              prefix: 'fa',
+              markerColor: 'green',
+              iconColor: 'white'
+            })
+          })
+        }
+      });
+
+      // create foods Leaflet GeoJSON layer and style with Awesome Markers
+      var foods = L.geoJson(food, {
+        pointToLayer: function(feature, ll) {
+          return L.marker(ll, {
+            icon: L.ExtraMarkers.icon({
+              icon: 'fas fa-utensils',
+              prefix: 'fa',
+              markerColor: 'yellow',
+              iconColor: 'white'
+            })
+          })
+        }
+      });
+
+      // create gastas Leaflet GeoJSON layer and style with Awesome Markers
+      var gastas = L.geoJson(gas, {
+        pointToLayer: function(feature, ll) {
+          return L.marker(ll, {
+            icon: L.ExtraMarkers.icon({
+              icon: 'fas fa-burn',
+              prefix: 'fa',
+              markerColor: 'orange',
+              iconColor: 'white'
+            })
+          })
+        }
+      });
+
+      // create tailors Leaflet GeoJSON layer and style with Awesome Markers
+      var tailors = L.geoJson(tailor, {
+        pointToLayer: function(feature, ll) {
+          return L.marker(ll, {
+            icon: L.ExtraMarkers.icon({
+              icon: 'fas fa-tshirt',
+              prefix: 'fa',
+              markerColor: 'purple',
+              iconColor: 'white'
+            })
+          })
+        }
+      });
+
+      // create taverns Leaflet GeoJSON layer and style with Awesome Markers
+      var taverns = L.geoJson(bar, {
+        pointToLayer: function(feature, ll) {
+          return L.marker(ll, {
+            icon: L.ExtraMarkers.icon({
+              icon: 'fas fa-beer',
+              prefix: 'fa',
+              markerColor: 'blue',
+              iconColor: 'white'
+            })
+          })
+        }
+      });
+
+      // create thomes Leaflet GeoJSON layer and style with Awesome Markers
+      var thomes = L.geoJson(thome, {
+        pointToLayer: function(feature, ll) {
+          return L.marker(ll, {
+            icon: L.ExtraMarkers.icon({
+              icon: 'fas fa-suitcase',
+              prefix: 'fa',
+              markerColor: 'red',
+              iconColor: 'white'
+            })
+          })
+        }
+      });
+
+      var currentYear = $('.slider').val();
+
+      // can I get rid of updateIcons?
+      cars.eachLayer(function(layer) {
+        if (layer.feature.properties.Year == currentYear) {
+          map.addLayer(cars)
+        }
+      });
+
+      beauty.eachLayer(function(layer) {
+        if (layer.feature.properties.Year == currentYear) {
+          map.addLayer(beauty)
+        }
+      });
+
+      drugs.eachLayer(function(layer) {
+        if (layer.feature.properties.Year == currentYear) {
+          map.addLayer(drugs)
+        }
+      });
+
+      garages.eachLayer(function(layer) {
+        if (layer.feature.properties.Year == currentYear) {
+          map.addLayer(garages)
+        }
+      });
+
+      hotels.eachLayer(function(layer) {
+        if (layer.feature.properties.Year == currentYear) {
+          map.addLayer(hotels)
+        }
+      });
+
+      foods.eachLayer(function(layer) {
+        if (layer.feature.properties.Year == currentYear) {
+          map.addLayer(foods)
+        }
+      });
+
+      gastas.eachLayer(function(layer) {
+        if (layer.feature.properties.Year == currentYear) {
+          map.addLayer(gastas)
+        }
+      });
+
+      tailors.eachLayer(function(layer) {
+        if (layer.feature.properties.Year == currentYear) {
+          map.addLayer(tailors)
+        }
+      });
+
+      taverns.eachLayer(function(layer) {
+        if (layer.feature.properties.Year == currentYear) {
+          map.addLayer(taverns)
+        }
+      });
+
+      thomes.eachLayer(function(layer) {
+        if (layer.feature.properties.Year == currentYear) {
+          map.addLayer(thomes)
+        }
+      });
+
+      // designate the layers as overlays
+      var overlays = {
+        "Automobiles": cars,
+        "Beauty": beauty,
+        "Garages": garages,
+        "Gas Stations": gastas,
+        "Lodging": hotels,
+        "Pharmacies": drugs,
+        "Restaurants": foods,
+        "Tailors": tailors,
+        "Taverns": taverns,
+        "Tourist Homes": thomes,
+      };
+
+      // all done with the layers, add them to layer control
+      var controlLayers = L.control.layers(baseMaps, overlays, {
+        collapsed: false,
+      }).addTo(map);
+
+      sequenceUI(cars, beauty, drugs, hotels, foods, gastas, tailors, taverns, thomes, garages);
+      createTemporalLegend(currentYear); // produces temporal legend upon map loading
+      updateIcons(cars, beauty, drugs, hotels, foods, gastas, tailors, taverns, thomes, garages, currentYear);
+      retrieveIconInfo(cars, beauty, drugs, hotels, foods, gastas, tailors, taverns, thomes, garages);
+
+    } // end the drawIcons function
+
+    // define updateIcons function
+    function updateIcons(cars, beauty, drugs, hotels, foods, gastas, tailors, taverns, thomes, garages, currentYear) {
+
+      // create icons for each automotive shop
+      cars.eachLayer(function(layer) {
+
+        var def = layer.feature.properties.Year;
+
+        if (map.hasLayer(cars) && def == currentYear) {
+          map.addLayer(layer)
+        } else {
+          map.removeLayer(layer)
+        }
+
+      });
+
+      // create icons for each beauty parlor
+      beauty.eachLayer(function(layer) {
+
+        var def = layer.feature.properties.Year;
+
+        if (map.hasLayer(beauty) && def == currentYear) {
+          map.addLayer(layer)
+        } else {
+          map.removeLayer(layer)
+        }
+
+      });
+
+      // create icons for each drug store
+      drugs.eachLayer(function(layer) {
+
+        var def = layer.feature.properties.Year;
+
+        if (map.hasLayer(drugs) && def == currentYear) {
+          map.addLayer(layer)
+        } else {
+          map.removeLayer(layer)
+        }
+
+      });
+
+      // create icons for each hotel
+      hotels.eachLayer(function(layer) {
+
+        var def = layer.feature.properties.Year;
+
+        if (map.hasLayer(hotels) && def == currentYear) {
+          map.addLayer(layer)
+        } else {
+          map.removeLayer(layer)
+        }
+
+      });
+
+      // create icons for each restaurant
+      foods.eachLayer(function(layer) {
+
+        var def = layer.feature.properties.Year;
+
+        if (map.hasLayer(foods) && def == currentYear) {
+          map.addLayer(layer)
+        } else {
+          map.removeLayer(layer)
+        }
+
+      });
+
+      // create icons for each gas station
+      gastas.eachLayer(function(layer) {
+
+        var def = layer.feature.properties.Year;
+
+        if (map.hasLayer(gastas) && def == currentYear) {
+          map.addLayer(layer)
+        } else {
+          map.removeLayer(layer)
+        }
+
+      });
+
+      // create icons for each tailor
+      tailors.eachLayer(function(layer) {
+
+        var def = layer.feature.properties.Year;
+
+        if (map.hasLayer(tailors) && def == currentYear) {
+          map.addLayer(layer)
+        } else {
+          map.removeLayer(layer)
+        }
+
+      });
+
+      // create icons for each tavern
+      taverns.eachLayer(function(layer) {
+
+        var def = layer.feature.properties.Year;
+
+        if (map.hasLayer(taverns) && def == currentYear) {
+          map.addLayer(layer)
+        } else {
+          map.removeLayer(layer)
+        }
+
+      });
+
+      // create icons for each tourist home
+      thomes.eachLayer(function(layer) {
+
+        var def = layer.feature.properties.Year;
+
+        if (map.hasLayer(thomes) && def == currentYear) {
+          map.addLayer(layer)
+        } else {
+          map.removeLayer(layer)
+        }
+
+      });
+
+      // create icons for each garage
+      garages.eachLayer(function(layer) {
+
+        var def = layer.feature.properties.Year;
+
+        if (map.hasLayer(garages) && def == currentYear) {
+          map.addLayer(layer)
+        } else {
+          map.removeLayer(layer)
+        }
+
+      });
+
+    }; // end updateIcons function
+
+    // define retrieveIconInfo function
+    function retrieveIconInfo(cars, beauty, drugs, hotels, foods, gastas, tailors, taverns, thomes, garages) {
+
+      // add content to popup window using the books Leaflet GeoJSON layer properties
+      cars.eachLayer(function(layer) {
+          var props = layer.feature.properties;
+          layer.bindPopup("<h3>" + props.Name + "</h3>" +
+                          "<h4>Amenity: " + props.Type +
+                          "<br>Address: " + props.Address + ", " + props.City + "</h4>" // add website
+                          );
+          layer.on('mouseover', function (e) {
+            this.openPopup();
+          });
+          layer.on('mouseout', function (e) {
+            this.closePopup();
+          })
+      });
+
+      // add content to popup window using the books Leaflet GeoJSON layer properties
+      beauty.eachLayer(function(layer) {
+          var props = layer.feature.properties;
+          layer.bindPopup("<h3>" + props.Name + "</h3>" +
+                          "<h4>Amenity: " + props.Type +
+                          "<br>Address: " + props.Address + ", " + props.City + "</h4>" // add website
+                          );
+          layer.on('mouseover', function (e) {
+            this.openPopup();
+          });
+          layer.on('mouseout', function (e) {
+            this.closePopup();
+          })
+      });
+
+      // add content to popup window using the books Leaflet GeoJSON layer properties
+      drugs.eachLayer(function(layer) {
+          var props = layer.feature.properties;
+          layer.bindPopup("<h3>" + props.Name + "</h3>" +
+                          "<h4>Amenity: " + props.Type +
+                          "<br>Address: " + props.Address + ", " + props.City + "</h4>" // add website
+                          );
+          layer.on('mouseover', function (e) {
+            this.openPopup();
+          });
+          layer.on('mouseout', function (e) {
+            this.closePopup();
+          })
+      });
+
+      // add content to popup window using the books Leaflet GeoJSON layer properties
+      hotels.eachLayer(function(layer) {
+          var props = layer.feature.properties;
+          layer.bindPopup("<h3>" + props.Name + "</h3>" +
+                          "<h4>Amenity: " + props.Type +
+                          "<br>Address: " + props.Address + ", " + props.City + "</h4>" // add website
+                          );
+          layer.on('mouseover', function (e) {
+            this.openPopup();
+          });
+          layer.on('mouseout', function (e) {
+            this.closePopup();
+          })
+      });
+
+      // add content to popup window using the books Leaflet GeoJSON layer properties
+      foods.eachLayer(function(layer) {
+          var props = layer.feature.properties;
+          layer.bindPopup("<h3>" + props.Name + "</h3>" +
+                          "<h4>Amenity: " + props.Type +
+                          "<br>Address: " + props.Address + ", " + props.City + "</h4>" // add website
+                          );
+          layer.on('mouseover', function (e) {
+            this.openPopup();
+          });
+          layer.on('mouseout', function (e) {
+            this.closePopup();
+          })
+      });
+
+      // add content to popup window using the books Leaflet GeoJSON layer properties
+      gastas.eachLayer(function(layer) {
+          var props = layer.feature.properties;
+          layer.bindPopup("<h3>" + props.Name + "</h3>" +
+                          "<h4>Amenity: " + props.Type +
+                          "<br>Address: " + props.Address + ", " + props.City + "</h4>" // add website
+                          );
+          layer.on('mouseover', function (e) {
+            this.openPopup();
+          });
+          layer.on('mouseout', function (e) {
+            this.closePopup();
+          })
+      });
+
+      // add content to popup window using the books Leaflet GeoJSON layer properties
+      tailors.eachLayer(function(layer) {
+          var props = layer.feature.properties;
+          layer.bindPopup("<h3>" + props.Name + "</h3>" +
+                          "<h4>Amenity: " + props.Type +
+                          "<br>Address: " + props.Address + ", " + props.City + "</h4>" // add website
+                          );
+          layer.on('mouseover', function (e) {
+            this.openPopup();
+          });
+          layer.on('mouseout', function (e) {
+            this.closePopup();
+          })
+      });
+
+      // add content to popup window using the books Leaflet GeoJSON layer properties
+      taverns.eachLayer(function(layer) {
+          var props = layer.feature.properties;
+          layer.bindPopup("<h3>" + props.Name + "</h3>" +
+                          "<h4>Amenity: " + props.Type +
+                          "<br>Address: " + props.Address + ", " + props.City + "</h4>" // add website
+                          );
+          layer.on('mouseover', function (e) {
+            this.openPopup();
+          });
+          layer.on('mouseout', function (e) {
+            this.closePopup();
+          })
+      });
+
+      // add content to popup window using the books Leaflet GeoJSON layer properties
+      thomes.eachLayer(function(layer) {
+          var props = layer.feature.properties;
+          layer.bindPopup("<h3>" + props.Name + "</h3>" +
+                          "<h4>Amenity: " + props.Type +
+                          "<br>Address: " + props.Address + ", " + props.City + "</h4>" // add website
+                          );
+          layer.on('mouseover', function (e) {
+            this.openPopup();
+          });
+          layer.on('mouseout', function (e) {
+            this.closePopup();
+          })
+      });
+
+      // add content to popup window using the books Leaflet GeoJSON layer properties
+      garages.eachLayer(function(layer) {
+          var props = layer.feature.properties;
+          layer.bindPopup("<h3>" + props.Name + "</h3>" +
+                          "<h4>Amenity: " + props.Type +
+                          "<br>Address: " + props.Address + ", " + props.City + "</h4>" // add website
+                          );
+          layer.on('mouseover', function (e) {
+            this.openPopup();
+          });
+          layer.on('mouseout', function (e) {
+            this.closePopup();
+          })
+      });
+
+    } // end retrieveIconInfo function
+
+/*
+                // add content to popup window using the books Leaflet GeoJSON layer properties
+                cars.eachLayer(function(layer) {
+                    var props = layer.feature.properties;
+                    layer.bindPopup("<h3>" + props.Name + "</h3>" +
+                                    "<h4>Amenity: " + props.Type +
+                                    "<br>Address: " + props.Address + ", " + props.City + "</h4>" // add website
+                                    );
+                    layer.on('mouseover', function (e) {
+                      this.openPopup();
+                    });
+                })
+
+                // add content to popup window using the education Leaflet GeoJSON layer properties
+                education.eachLayer(function(layer) {
+                    var props = layer.feature.properties;
+                    layer.bindPopup("<h3>" + props.name + "</h3><br>" +
+                                    "<h4>Hours Open: " + props.opening_hours +
+                                    "<br>Phone Number: " + props.phone +
+                                    "<br>Take me to the <a target='blank' href=" + "'" + props.website + "''" + ">website</a>.</h4>" // add website
+                                    );
+                    layer.on('mouseover', function (e) {
+                      this.openPopup();
+                    });
+                })
+
+                // add content to popup window using the food Leaflet GeoJSON layer properties
+                food.eachLayer(function(layer) {
+                    var props = layer.feature.properties;
+                    layer.bindPopup("<h3>" + props.name + "</h3><br>" +
+                                    "<h4>Hours Open: " + props.opening_hours +
+                                    "<br>Phone Number: " + props.phone +
+                                    "<br>Take me to the <a target='blank' href=" + "'" + props.website + "''" + ">website</a>.</h4>" // add website
+                                    );
+                    layer.on('mouseover', function (e) {
+                      this.openPopup();
+                    });
+                })
+
+                // add content to popup window using the parks Leaflet GeoJSON layer properties
+                parks.eachLayer(function(layer) {
+                    var props = layer.feature.properties;
+                    layer.bindPopup("<h3>" + props.name + "</h3><br>" +
+                                    "<h4>Hours Open: " + props.opening_hours +
+                                    "<br>Phone Number: " + props.phone +
+                                    "<br>Take me to the <a target='blank' href=" + "'" + props.website + "''" + ">website</a>.</h4>" // add website
+                                    );
+                    layer.on('mouseover', function (e) {
+                      this.openPopup();
+                    });
+                })
+
+                // add content to popup window using the trains Leaflet GeoJSON layer properties
+                trains.eachLayer(function(layer) {
+                    var props = layer.feature.properties;
+                    layer.bindPopup("<h3>" + props.name + "</h3><br>" +
+                                    "<h4>Hours Open: " + props.opening_hours +
+                                    "<br>Phone Number: " + props.phone +
+                                    "<br>Take me to the <a target='blank' href=" + "'" + props.website + "''" + ">website</a>.</h4>" // add website
+                                    );
+                    layer.on('mouseover', function (e) {
+                      this.openPopup();
+                    });
+                })
+/*
+                // designate the layers as overlays
+                var overlays = {
+                  "Auto Shops": cars
+                };
+
+                // all done with the layers, add them to layer control
+                L.control.layers(null, overlays, {
+                  collapsed: false,
+                }).addTo(map);
+*/
+
+  </script>
+</body>
+
+</html>

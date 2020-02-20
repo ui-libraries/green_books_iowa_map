@@ -1,0 +1,8 @@
+{
+"type": "FeatureCollection",
+"name": "taverns_iowa",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "City": "Des Moines", "Type": "Taverns", "Name": "Herb's", "Address": "1002 Center Street", "GeoADD": "1002 Center Street, Des Moines, Iowa", "Year": 1950, "COORD": "41.591638, -93.630599", "COORD_X": -93.630599, "COORD_Y": 41.591638, "Notes": null, "LAT": 41.591638, "LONG": -93.630599, "layer": "taverns1950", "path": "C:\/Users\/jaybowen\/Desktop\/Maps\/greenbooks_data\/taverns1950.shp" }, "geometry": { "type": "Point", "coordinates": [ -93.63055, 41.59167 ] } }
+]
+}
