@@ -1,3 +1,3 @@
-# Julians-Map
-A map of Julian's favorite places in Lexington, KY.
-See the map [here](https://jebowe3.github.io/Julians-Map/).
+# Green-Book-Map
+A map of listed amenities in Iowa from the Green Books of 1940, 50, and 60.
+See the map [here]().
