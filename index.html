@@ -185,17 +185,21 @@
       minZoom: 7,
     });
 */
-    var overmap = L.mapbox.styleLayer('mapbox://styles/jebowe3/ck6vbdt990eiy1intt77mioei');
+    var overmap1 = L.mapbox.styleLayer('mapbox://styles/jebowe3/ck788bszk0wt91imjbb16iy8l');
+    var overmap2 = L.mapbox.styleLayer('mapbox://styles/jebowe3/ck6vbdt990eiy1intt77mioei');
+    var overmap3 = L.mapbox.styleLayer('mapbox://styles/jebowe3/ck78dcwh52gq11io2ggxhtqtk');
 
     // center map on Iowa coordinates and set initial zoom
     var map = L.map('map', {
       maxBounds: L.latLngBounds([44, -88.0], [40.0, -99.0]),
-      layers: [basemap, overmap]
+      layers: [basemap, overmap1, overmap2, overmap3]
     }).setView([42, -93], 8);
 
     var baseMaps = {
       "Contemporary": basemap,
-      "1950 Road Map": overmap
+      "1960 Road Map": overmap3,
+      "1950 Road Map": overmap2,
+      "1940 Road Map": overmap1
     };
 
     // add a scale bar
