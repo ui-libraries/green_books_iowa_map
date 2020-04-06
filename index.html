@@ -523,10 +523,10 @@
           map.addLayer(thomes)
         }
       });
-
+/*
       // designate the layers as overlays
       var overlays = {
-        "Automobiles": cars,
+        "Amenities": cars,
         "Beauty": beauty,
         "Garages": garages,
         "Gas Stations": gastas,
@@ -537,9 +537,9 @@
         "Taverns": taverns,
         "Tourist Homes": thomes,
       };
-
+*/
       // all done with the layers, add them to layer control
-      var controlLayers = L.control.layers(baseMaps, overlays, {
+      var controlLayers = L.control.layers(baseMaps, null, {
         collapsed: false,
       }).addTo(map);
 
