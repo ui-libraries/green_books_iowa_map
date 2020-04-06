@@ -1,8 +1,0 @@
-{
-"type": "FeatureCollection",
-"name": "garages_iowa",
-"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
-"features": [
-{ "type": "Feature", "properties": { "City": "Des Moines", "Type": "Garages", "Name": "4th Street", "Address": "417 4th Street", "GeoADD": "417 4th Street, Des Moines, Iowa", "Year": 1950, "COORD": "41.587999, -93.622589", "COORD_X": -93.622589, "COORD_Y": 41.587999, "Notes": null, "LAT": 41.587999, "LONG": -93.622589 }, "geometry": { "type": "Point", "coordinates": [ -93.62259, 41.588 ] } }
-]
-}

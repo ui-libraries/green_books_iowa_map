@@ -1,9 +1,0 @@
-{
-"type": "FeatureCollection",
-"name": "tailors_iowa",
-"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
-"features": [
-{ "type": "Feature", "properties": { "City": "Des Moines", "Type": "Tailors", "Name": "National", "Address": "808 12th Street", "GeoADD": "808 12th Street, Des Moines, Iowa", "Year": 1950, "COORD": "41.592081, -93.632249", "COORD_X": -93.632249, "COORD_Y": 41.592081, "Notes": null, "LAT": 41.592081, "LONG": -93.632249 }, "geometry": { "type": "Point", "coordinates": [ -93.63225, 41.59208 ] } },
-{ "type": "Feature", "properties": { "City": "Des Moines", "Type": "Tailors", "Name": "Clean Craft", "Address": "1300 6th Avenue", "GeoADD": "1300 6th Avenue, Des Moines, Iowa", "Year": 1950, "COORD": "41.602359, -93.625917", "COORD_X": -93.625917, "COORD_Y": 41.602359, "Notes": null, "LAT": 41.602359, "LONG": -93.625917 }, "geometry": { "type": "Point", "coordinates": [ -93.62592, 41.60236 ] } }
-]
-}
