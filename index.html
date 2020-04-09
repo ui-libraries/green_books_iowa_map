@@ -9,8 +9,17 @@
   <!--[if lte IE 8]>
       <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.2/leaflet.ie.css" />
   <![endif]-->
-  <script src="https://kit.fontawesome.com/3625013d3b.js" crossorigin="anonymous"></script>
+  <!--for filter button icon support-->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.10.2/css/all.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.10.2/css/v4-shims.css">
+
+  <!--leaflet tag filter buttons from: https://github.com/maydemirx/leaflet-tag-filter-button-->
+  <link rel="stylesheet" href="css/leaflet-tag-filter-button.css">
+  <link rel="stylesheet" href="css/easy-button.css">
+
   <link rel="stylesheet" href="css/leaflet.extra-markers.min.css">
+
   <style type="text/css">
     <style>body {
       margin: 0px;
@@ -119,15 +128,29 @@
       left: 120px;
       z-index: 1000;
       background-color: #fdf5e6;
-      border-left: 1px solid;
-      border-right: 1px solid;
-      border-top: 1px solid;
-      border-bottom: 1px solid
+      border-radius: 3px;
+      box-shadow: 0px 0px 0px 2px rgba(0, 0, 0, 0.3);
     }
 
     #temporal {
-      background-color: #fdf5e6
+      background-color: #fdf5e6;
     }
+
+    .temporal-legend {
+      position: absolute;
+      left: 10px;
+      height: 41px;
+      width: 89px;
+      bottom: 1px;
+      z-index: 1000;
+      background-color: #fdf5e6;
+      padding-bottom: 10px;
+      padding-left: 5px;
+      border-radius: 3px;
+      box-shadow: 0px 0px 0px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .temporal-legend div {}
 
     /* Set background colors for popup windows */
     .leaflet-popup-content-wrapper {
@@ -135,7 +158,7 @@
     }
 
     .leaflet-popup-tip {
-      border-top:10px solid #f2eecb;
+      border-top: 10px solid #f2eecb;
     }
 
     /* Set background color of layer control */
@@ -163,22 +186,18 @@
 
   <!-- ui slider -->
   <div id='slider' class='range w300 round py6 border--gray-light px12 leaflet-control'>
-    <input type='range' min="1940" max="1960" value="1940" step="10" class="slider" />
+    <input class="slider" />
   </div>
   <!-- end slider -->
 
-  <!-- temporal legend -->
-  <div id='temporal' class='py2 px12 border border--gray-light round bottom left wmax200'>
-    <h6 class='txt-bold'>Year: <span></span></h6>
-  </div>
-  <!-- end temporal -->
-
-  <script src="https://d3js.org/d3.v4.min.js"></script>
   <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
   <script src='https://api.mapbox.com/mapbox.js/v3.2.1/mapbox.js'></script>
   <script src='https://api.mapbox.com/mapbox-assembly/v0.8.0/assembly.js'></script>
   <script src="leaflet_awesome_markers.js"></script>
   <script src="js/leaflet.extra-markers.min.js"></script>
+
+  <script src="js/easy-button.js"></script>
+  <script src="js/leaflet-tag-filter-button.js"></script>
 
   <script>
     // add mapbox Iowa_1950 tiles
@@ -246,47 +265,149 @@
       position: 'bottomright'
     }).addTo(map);
 
-    // load the data asynchronously
-    d3.queue()
-      .defer(d3.json, 'data/all_amenities.geojson')
-      .await(drawMap);
-
-    // define drawMap function
-    function drawMap(err, amenities) {
-
-      // send geojsons to drawIcons function
-      drawIcons(amenities);
-
-    }; // end drawMap function
-
-    // add a temporal legend in sync with the UI slider
-    function createTemporalLegend(currentYear) {
-
-      var temporalLegend = L.control({
-        position: 'bottomleft' // place the temporal legend at bottom left corner
+    $.getJSON("data/all_amenities.geojson")
+      .done(function(data) {
+        var info = processData(data);
+        createIcons(info.timestamps, data);
+        sequenceUI(info.timestamps);
+      })
+      .fail(function() {
+        alert("There has been a problem loading the data.")
       });
 
-      // when added to the map
-      temporalLegend.onAdd = function(map) {
+    // define processData function
+    function processData(data) {
+      var unsortedTimestamps = [];
+      var min = Infinity;
+      var max = -Infinity;
 
-        var div = L.DomUtil.get("temporal"); // get the style settings
+      for (var feature in data.features) {
 
-        // disable the mouse events
-        L.DomEvent.disableScrollPropagation(div);
-        L.DomEvent.disableClickPropagation(div);
+        var properties = data.features[feature].properties;
 
-        return div; // return the style settings
+        for (var attribute in properties) {
 
+          if (attribute != 'City' &&
+            attribute != 'Type' &&
+            attribute != 'Name' &&
+            attribute != 'Address' &&
+            attribute != 'GeoADD' &&
+            attribute != 'COORD' &&
+            attribute != 'COORD_X' &&
+            attribute != 'COORD_Y' &&
+            attribute != 'Notes' &&
+            attribute != 'LAT' &&
+            attribute != 'LONG' &&
+            attribute != 'layer' &&
+            attribute != 'path') {
+
+            if ($.inArray(properties[attribute], unsortedTimestamps) === -1) {
+              unsortedTimestamps.push(properties[attribute]);
+            }
+
+            if (properties[attribute] < min) {
+              min = properties[attribute];
+            }
+
+            if (properties[attribute] > max) {
+              max = properties[attribute];
+            }
+          }
+        }
       }
+      return {
+        timestamps: unsortedTimestamps.sort(function(a, b) {
+          return a - b
+        }),
+        min: min,
+        max: max
+      }
+    } // end processData
 
-      $('#temporal span').html(currentYear); // change grade value to that currently selected by UI slider
+    // define createIcons function
+    function createIcons(timestamps, data) {
 
-      temporalLegend.addTo(map); // add the temporal legend to the map
+      // define amenities icons
+      amenities = L.geoJson(data, {
 
-    }; // end createTemporalLegend function
+        pointToLayer: function(feature, ll) {
+
+          //define an empty array into which you can add tags for the filter buttons
+          var tags = [];
+
+          //push properties into the tags array for later referencing by the filter buttons
+          tags.push(feature.properties.Type);
+
+          return L.marker(ll, {
+            tags: tags,
+            icon: L.ExtraMarkers.icon({
+              icon: getIcon(feature.properties.Type),
+              prefix: 'fa',
+              markerColor: getColor(feature.properties.Type),
+              iconColor: 'white'
+            })
+          })
+
+        }
+
+      }).addTo(map);
+
+      // all done with the layers, add them to layer control
+      var controlLayers = L.control.layers(baseMaps, null, {
+        collapsed: false,
+      }).addTo(map);
+
+      // amenity type
+      L.control.tagFilterButton({
+        data: ["Automotive", "Beauty Parlors", "Drug Stores", "Garages", "Hotels", "Restaurants", "Service Stations", "Tailors", "Taverns", "Tourist Homes"],
+        filterOnEveryClick: true,
+        icon: '<i class="fas fa-filter" style="font-size:18px; padding-top: 6px;"></i>',
+      }).addTo(map);
+
+      jQuery('.easy-button-button').click(function() {
+        target = jQuery('.easy-button-button').not(this);
+        target.parent().find('.tag-filter-tags-container').css({
+          'display': 'none',
+        });
+      });
+
+      //disable dragging of the map after clicking a filter button
+      jQuery('.easy-button-button').click(function() {
+        map.dragging.disable();
+      });
+
+      //enable dragging of the map after clicking on the map
+      map.on('click', function() {
+        map.dragging.enable();
+      });
+
+      // call updateIcons function
+      updateIcons(timestamps[0]);
+
+      // call retrieveIconInfo function
+      retrieveIconInfo(amenities);
+
+    } // end createIcons function
+
+    // define updateIcons function
+    function updateIcons(timestamp) {
+
+      amenities.eachLayer(function(layer) {
+
+        var def = layer.feature.properties.Year;
+
+        if (def == timestamp) {
+          map.addLayer(layer)
+        } else {
+          map.removeLayer(layer)
+        }
+
+      });
+
+    } // end updateIcons function
 
     // add a UI slider
-    function sequenceUI(cars, beauty, drugs, hotels, foods, gastas, tailors, taverns, thomes, garages) {
+    function sequenceUI(timestamps) {
 
       // create Leaflet control for the slider
       var sliderControl = L.control({
@@ -310,611 +431,61 @@
       sliderControl.addTo(map);
 
       $('.slider')
+        .attr({
+          'type': 'range',
+          'max': timestamps[timestamps.length - 1],
+          'min': timestamps[0],
+          'step': 10,
+          'value': String(timestamps[0])
+        })
         .on('input change', function() {
-          var currentYear = $(this).val(); // identifies the year selected
-          createTemporalLegend(currentYear); // create the temporal legend to show the year selected by the slider
-          updateIcons(cars, beauty, drugs, hotels, foods, gastas, tailors, taverns, thomes, garages, currentYear); // update the icons to show according to their year
+          updateIcons($(this).val().toString()); // update the icons to show according to their year
+          $(".temporal-legend").html('<h6>Year: ' + this.value + '</h6>');
         });
 
-    }; // End sequenceUI function
+      createTemporalLegend(timestamps[0]);
 
-    // draw the icons
-    function drawIcons(amenities) {
+    }; // end sequenceUI function
 
-      // create cars Leaflet GeoJSON layer and style with Awesome Markers
-      var cars = L.geoJson(amenities, {
-        pointToLayer: function(feature, ll) {
-          return L.marker(ll, {
-            icon: L.ExtraMarkers.icon({
-              icon: getIcon(feature.properties.Type),
-              prefix: 'fa',
-              markerColor: getColor(feature.properties.Type),
-              iconColor: 'white'
-            })
-          })
-        }
-      }).addTo(map);
+    // add a temporal legend in sync with the UI slider
+    function createTemporalLegend(startTimestamp) {
 
-      // create beauty Leaflet GeoJSON layer and style with Awesome Markers
-      var beauty = L.geoJson(amenities, {
-        pointToLayer: function(feature, ll) {
-          return L.marker(ll, {
-            icon: L.ExtraMarkers.icon({
-              icon: getIcon(feature.properties.Type),
-              prefix: 'fa',
-              markerColor: getColor(feature.properties.Type),
-              iconColor: 'white'
-            })
-          })
-        }
-      }).addTo(map);
-
-      // create drugs Leaflet GeoJSON layer and style with Awesome Markers
-      var drugs = L.geoJson(amenities, {
-        pointToLayer: function(feature, ll) {
-          return L.marker(ll, {
-            icon: L.ExtraMarkers.icon({
-              icon: getIcon(feature.properties.Type),
-              prefix: 'fa',
-              markerColor: getColor(feature.properties.Type),
-              iconColor: 'white'
-            })
-          })
-        }
-      }).addTo(map);
-
-      // create garages Leaflet GeoJSON layer and style with Awesome Markers
-      var garages = L.geoJson(amenities, {
-        pointToLayer: function(feature, ll) {
-          return L.marker(ll, {
-            icon: L.ExtraMarkers.icon({
-              icon: getIcon(feature.properties.Type),
-              prefix: 'fa',
-              markerColor: getColor(feature.properties.Type),
-              iconColor: 'white'
-            })
-          })
-        }
-      }).addTo(map);
-
-      // create hotels Leaflet GeoJSON layer and style with Awesome Markers
-      var hotels = L.geoJson(amenities, {
-        pointToLayer: function(feature, ll) {
-          return L.marker(ll, {
-            icon: L.ExtraMarkers.icon({
-              icon: getIcon(feature.properties.Type),
-              prefix: 'fa',
-              markerColor: getColor(feature.properties.Type),
-              iconColor: 'white'
-            })
-          })
-        }
-      }).addTo(map);
-
-      // create foods Leaflet GeoJSON layer and style with Awesome Markers
-      var foods = L.geoJson(amenities, {
-        pointToLayer: function(feature, ll) {
-          return L.marker(ll, {
-            icon: L.ExtraMarkers.icon({
-              icon: getIcon(feature.properties.Type),
-              prefix: 'fa',
-              markerColor: getColor(feature.properties.Type),
-              iconColor: 'white'
-            })
-          })
-        }
-      }).addTo(map);
-
-      // create gastas Leaflet GeoJSON layer and style with Awesome Markers
-      var gastas = L.geoJson(amenities, {
-        pointToLayer: function(feature, ll) {
-          return L.marker(ll, {
-            icon: L.ExtraMarkers.icon({
-              icon: getIcon(feature.properties.Type),
-              prefix: 'fa',
-              markerColor: getColor(feature.properties.Type),
-              iconColor: 'white'
-            })
-          })
-        }
-      }).addTo(map);
-
-      // create tailors Leaflet GeoJSON layer and style with Awesome Markers
-      var tailors = L.geoJson(amenities, {
-        pointToLayer: function(feature, ll) {
-          return L.marker(ll, {
-            icon: L.ExtraMarkers.icon({
-              icon: getIcon(feature.properties.Type),
-              prefix: 'fa',
-              markerColor: getColor(feature.properties.Type),
-              iconColor: 'white'
-            })
-          })
-        }
-      }).addTo(map);
-
-      // create taverns Leaflet GeoJSON layer and style with Awesome Markers
-      var taverns = L.geoJson(amenities, {
-        pointToLayer: function(feature, ll) {
-          return L.marker(ll, {
-            icon: L.ExtraMarkers.icon({
-              icon: getIcon(feature.properties.Type),
-              prefix: 'fa',
-              markerColor: getColor(feature.properties.Type),
-              iconColor: 'white'
-            })
-          })
-        }
-      }).addTo(map);
-
-      // create thomes Leaflet GeoJSON layer and style with Awesome Markers
-      var thomes = L.geoJson(amenities, {
-        pointToLayer: function(feature, ll) {
-          return L.marker(ll, {
-            icon: L.ExtraMarkers.icon({
-              icon: getIcon(feature.properties.Type),
-              prefix: 'fa',
-              markerColor: getColor(feature.properties.Type),
-              iconColor: 'white'
-            })
-          })
-        }
-      }).addTo(map);
-
-      var currentYear = $('.slider').val();
-
-      // can I get rid of updateIcons?
-      cars.eachLayer(function(layer) {
-        if (layer.feature.properties.Year == currentYear) {
-          map.addLayer(cars)
-        }
+      var temporalLegend = L.control({
+        position: 'bottomleft' // place the temporal legend at bottom left corner
       });
 
-      beauty.eachLayer(function(layer) {
-        if (layer.feature.properties.Year == currentYear) {
-          map.addLayer(beauty)
-        }
-      });
+      temporalLegend.onAdd = function(map) {
+        var output = L.DomUtil.create("div", "temporal-legend");
+        $(output).html('<h6>Year: ' + startTimestamp + '</h6>');
+        return output;
+      }
 
-      drugs.eachLayer(function(layer) {
-        if (layer.feature.properties.Year == currentYear) {
-          map.addLayer(drugs)
-        }
-      });
+      temporalLegend.addTo(map);
 
-      garages.eachLayer(function(layer) {
-        if (layer.feature.properties.Year == currentYear) {
-          map.addLayer(garages)
-        }
-      });
+    }; // end createTemporalLegend function
 
-      hotels.eachLayer(function(layer) {
-        if (layer.feature.properties.Year == currentYear) {
-          map.addLayer(hotels)
-        }
-      });
-
-      foods.eachLayer(function(layer) {
-        if (layer.feature.properties.Year == currentYear) {
-          map.addLayer(foods)
-        }
-      });
-
-      gastas.eachLayer(function(layer) {
-        if (layer.feature.properties.Year == currentYear) {
-          map.addLayer(gastas)
-        }
-      });
-
-      tailors.eachLayer(function(layer) {
-        if (layer.feature.properties.Year == currentYear) {
-          map.addLayer(tailors)
-        }
-      });
-
-      taverns.eachLayer(function(layer) {
-        if (layer.feature.properties.Year == currentYear) {
-          map.addLayer(taverns)
-        }
-      });
-
-      thomes.eachLayer(function(layer) {
-        if (layer.feature.properties.Year == currentYear) {
-          map.addLayer(thomes)
-        }
-      });
-/*
-      // designate the layers as overlays
-      var overlays = {
-        "Amenities": cars,
-        "Beauty": beauty,
-        "Garages": garages,
-        "Gas Stations": gastas,
-        "Lodging": hotels,
-        "Pharmacies": drugs,
-        "Restaurants": foods,
-        "Tailors": tailors,
-        "Taverns": taverns,
-        "Tourist Homes": thomes,
-      };
-*/
-      // all done with the layers, add them to layer control
-      var controlLayers = L.control.layers(baseMaps, null, {
-        collapsed: false,
-      }).addTo(map);
-
-      sequenceUI(cars, beauty, drugs, hotels, foods, gastas, tailors, taverns, thomes, garages);
-      createTemporalLegend(currentYear); // produces temporal legend upon map loading
-      updateIcons(cars, beauty, drugs, hotels, foods, gastas, tailors, taverns, thomes, garages, currentYear);
-      retrieveIconInfo(cars, beauty, drugs, hotels, foods, gastas, tailors, taverns, thomes, garages);
-
-    } // end the drawIcons function
-
-    // define updateIcons function
-    function updateIcons(cars, beauty, drugs, hotels, foods, gastas, tailors, taverns, thomes, garages, currentYear) {
-
-      // create icons for each automotive shop
-      cars.eachLayer(function(layer) {
-
-        var def = layer.feature.properties.Year;
-
-        if (map.hasLayer(cars) && def == currentYear) {
-          map.addLayer(layer)
-        } else {
-          map.removeLayer(layer)
-        }
-
-      });
-
-      // create icons for each beauty parlor
-      beauty.eachLayer(function(layer) {
-
-        var def = layer.feature.properties.Year;
-
-        if (map.hasLayer(beauty) && def == currentYear) {
-          map.addLayer(layer)
-        } else {
-          map.removeLayer(layer)
-        }
-
-      });
-
-      // create icons for each drug store
-      drugs.eachLayer(function(layer) {
-
-        var def = layer.feature.properties.Year;
-
-        if (map.hasLayer(drugs) && def == currentYear) {
-          map.addLayer(layer)
-        } else {
-          map.removeLayer(layer)
-        }
-
-      });
-
-      // create icons for each hotel
-      hotels.eachLayer(function(layer) {
-
-        var def = layer.feature.properties.Year;
-
-        if (map.hasLayer(hotels) && def == currentYear) {
-          map.addLayer(layer)
-        } else {
-          map.removeLayer(layer)
-        }
-
-      });
-
-      // create icons for each restaurant
-      foods.eachLayer(function(layer) {
-
-        var def = layer.feature.properties.Year;
-
-        if (map.hasLayer(foods) && def == currentYear) {
-          map.addLayer(layer)
-        } else {
-          map.removeLayer(layer)
-        }
-
-      });
-
-      // create icons for each gas station
-      gastas.eachLayer(function(layer) {
-
-        var def = layer.feature.properties.Year;
-
-        if (map.hasLayer(gastas) && def == currentYear) {
-          map.addLayer(layer)
-        } else {
-          map.removeLayer(layer)
-        }
-
-      });
-
-      // create icons for each tailor
-      tailors.eachLayer(function(layer) {
-
-        var def = layer.feature.properties.Year;
-
-        if (map.hasLayer(tailors) && def == currentYear) {
-          map.addLayer(layer)
-        } else {
-          map.removeLayer(layer)
-        }
-
-      });
-
-      // create icons for each tavern
-      taverns.eachLayer(function(layer) {
-
-        var def = layer.feature.properties.Year;
-
-        if (map.hasLayer(taverns) && def == currentYear) {
-          map.addLayer(layer)
-        } else {
-          map.removeLayer(layer)
-        }
-
-      });
-
-      // create icons for each tourist home
-      thomes.eachLayer(function(layer) {
-
-        var def = layer.feature.properties.Year;
-
-        if (map.hasLayer(thomes) && def == currentYear) {
-          map.addLayer(layer)
-        } else {
-          map.removeLayer(layer)
-        }
-
-      });
-
-      // create icons for each garage
-      garages.eachLayer(function(layer) {
-
-        var def = layer.feature.properties.Year;
-
-        if (map.hasLayer(garages) && def == currentYear) {
-          map.addLayer(layer)
-        } else {
-          map.removeLayer(layer)
-        }
-
-      });
-
-    }; // end updateIcons function
 
     // define retrieveIconInfo function
-    function retrieveIconInfo(cars, beauty, drugs, hotels, foods, gastas, tailors, taverns, thomes, garages) {
+    function retrieveIconInfo(amenities) {
 
       // add content to popup window using the books Leaflet GeoJSON layer properties
-      cars.eachLayer(function(layer) {
+      amenities.eachLayer(function(layer) {
         var props = layer.feature.properties;
-        layer.bindPopup("<h3>" + props.Name + "</h3>" +
+        layer.bindPopup("<h3>" + props.Year + " Green Book" + "<br>" + props.Name + "</h3>" +
           "<h4>Amenity: " + props.Type +
           "<br>Address: " + props.Address + ", " + props.City + "</h4>" // add website
         );
         layer.on('mouseover', function(e) {
           this.openPopup();
         });
+        /*
         layer.on('mouseout', function(e) {
           this.closePopup();
         })
-      });
-
-      // add content to popup window using the books Leaflet GeoJSON layer properties
-      beauty.eachLayer(function(layer) {
-        var props = layer.feature.properties;
-        layer.bindPopup("<h3>" + props.Name + "</h3>" +
-          "<h4>Amenity: " + props.Type +
-          "<br>Address: " + props.Address + ", " + props.City + "</h4>" // add website
-        );
-        layer.on('mouseover', function(e) {
-          this.openPopup();
-        });
-        layer.on('mouseout', function(e) {
-          this.closePopup();
-        })
-      });
-
-      // add content to popup window using the books Leaflet GeoJSON layer properties
-      drugs.eachLayer(function(layer) {
-        var props = layer.feature.properties;
-        layer.bindPopup("<h3>" + props.Name + "</h3>" +
-          "<h4>Amenity: " + props.Type +
-          "<br>Address: " + props.Address + ", " + props.City + "</h4>" // add website
-        );
-        layer.on('mouseover', function(e) {
-          this.openPopup();
-        });
-        layer.on('mouseout', function(e) {
-          this.closePopup();
-        })
-      });
-
-      // add content to popup window using the books Leaflet GeoJSON layer properties
-      hotels.eachLayer(function(layer) {
-        var props = layer.feature.properties;
-        layer.bindPopup("<h3>" + props.Name + "</h3>" +
-          "<h4>Amenity: " + props.Type +
-          "<br>Address: " + props.Address + ", " + props.City + "</h4>" // add website
-        );
-        layer.on('mouseover', function(e) {
-          this.openPopup();
-        });
-        layer.on('mouseout', function(e) {
-          this.closePopup();
-        })
-      });
-
-      // add content to popup window using the books Leaflet GeoJSON layer properties
-      foods.eachLayer(function(layer) {
-        var props = layer.feature.properties;
-        layer.bindPopup("<h3>" + props.Name + "</h3>" +
-          "<h4>Amenity: " + props.Type +
-          "<br>Address: " + props.Address + ", " + props.City + "</h4>" // add website
-        );
-        layer.on('mouseover', function(e) {
-          this.openPopup();
-        });
-        layer.on('mouseout', function(e) {
-          this.closePopup();
-        })
-      });
-
-      // add content to popup window using the books Leaflet GeoJSON layer properties
-      gastas.eachLayer(function(layer) {
-        var props = layer.feature.properties;
-        layer.bindPopup("<h3>" + props.Name + "</h3>" +
-          "<h4>Amenity: " + props.Type +
-          "<br>Address: " + props.Address + ", " + props.City + "</h4>" // add website
-        );
-        layer.on('mouseover', function(e) {
-          this.openPopup();
-        });
-        layer.on('mouseout', function(e) {
-          this.closePopup();
-        })
-      });
-
-      // add content to popup window using the books Leaflet GeoJSON layer properties
-      tailors.eachLayer(function(layer) {
-        var props = layer.feature.properties;
-        layer.bindPopup("<h3>" + props.Name + "</h3>" +
-          "<h4>Amenity: " + props.Type +
-          "<br>Address: " + props.Address + ", " + props.City + "</h4>" // add website
-        );
-        layer.on('mouseover', function(e) {
-          this.openPopup();
-        });
-        layer.on('mouseout', function(e) {
-          this.closePopup();
-        })
-      });
-
-      // add content to popup window using the books Leaflet GeoJSON layer properties
-      taverns.eachLayer(function(layer) {
-        var props = layer.feature.properties;
-        layer.bindPopup("<h3>" + props.Name + "</h3>" +
-          "<h4>Amenity: " + props.Type +
-          "<br>Address: " + props.Address + ", " + props.City + "</h4>" // add website
-        );
-        layer.on('mouseover', function(e) {
-          this.openPopup();
-        });
-        layer.on('mouseout', function(e) {
-          this.closePopup();
-        })
-      });
-
-      // add content to popup window using the books Leaflet GeoJSON layer properties
-      thomes.eachLayer(function(layer) {
-        var props = layer.feature.properties;
-        layer.bindPopup("<h3>" + props.Name + "</h3>" +
-          "<h4>Amenity: " + props.Type +
-          "<br>Address: " + props.Address + ", " + props.City + "</h4>" // add website
-        );
-        layer.on('mouseover', function(e) {
-          this.openPopup();
-        });
-        layer.on('mouseout', function(e) {
-          this.closePopup();
-        })
-      });
-
-      // add content to popup window using the books Leaflet GeoJSON layer properties
-      garages.eachLayer(function(layer) {
-        var props = layer.feature.properties;
-        layer.bindPopup("<h3>" + props.Name + "</h3>" +
-          "<h4>Amenity: " + props.Type +
-          "<br>Address: " + props.Address + ", " + props.City + "</h4>" // add website
-        );
-        layer.on('mouseover', function(e) {
-          this.openPopup();
-        });
-        layer.on('mouseout', function(e) {
-          this.closePopup();
-        })
+        */
       });
 
     } // end retrieveIconInfo function
-
-    /*
-                    // add content to popup window using the books Leaflet GeoJSON layer properties
-                    cars.eachLayer(function(layer) {
-                        var props = layer.feature.properties;
-                        layer.bindPopup("<h3>" + props.Name + "</h3>" +
-                                        "<h4>Amenity: " + props.Type +
-                                        "<br>Address: " + props.Address + ", " + props.City + "</h4>" // add website
-                                        );
-                        layer.on('mouseover', function (e) {
-                          this.openPopup();
-                        });
-                    })
-
-                    // add content to popup window using the education Leaflet GeoJSON layer properties
-                    education.eachLayer(function(layer) {
-                        var props = layer.feature.properties;
-                        layer.bindPopup("<h3>" + props.name + "</h3><br>" +
-                                        "<h4>Hours Open: " + props.opening_hours +
-                                        "<br>Phone Number: " + props.phone +
-                                        "<br>Take me to the <a target='blank' href=" + "'" + props.website + "''" + ">website</a>.</h4>" // add website
-                                        );
-                        layer.on('mouseover', function (e) {
-                          this.openPopup();
-                        });
-                    })
-
-                    // add content to popup window using the food Leaflet GeoJSON layer properties
-                    food.eachLayer(function(layer) {
-                        var props = layer.feature.properties;
-                        layer.bindPopup("<h3>" + props.name + "</h3><br>" +
-                                        "<h4>Hours Open: " + props.opening_hours +
-                                        "<br>Phone Number: " + props.phone +
-                                        "<br>Take me to the <a target='blank' href=" + "'" + props.website + "''" + ">website</a>.</h4>" // add website
-                                        );
-                        layer.on('mouseover', function (e) {
-                          this.openPopup();
-                        });
-                    })
-
-                    // add content to popup window using the parks Leaflet GeoJSON layer properties
-                    parks.eachLayer(function(layer) {
-                        var props = layer.feature.properties;
-                        layer.bindPopup("<h3>" + props.name + "</h3><br>" +
-                                        "<h4>Hours Open: " + props.opening_hours +
-                                        "<br>Phone Number: " + props.phone +
-                                        "<br>Take me to the <a target='blank' href=" + "'" + props.website + "''" + ">website</a>.</h4>" // add website
-                                        );
-                        layer.on('mouseover', function (e) {
-                          this.openPopup();
-                        });
-                    })
-
-                    // add content to popup window using the trains Leaflet GeoJSON layer properties
-                    trains.eachLayer(function(layer) {
-                        var props = layer.feature.properties;
-                        layer.bindPopup("<h3>" + props.name + "</h3><br>" +
-                                        "<h4>Hours Open: " + props.opening_hours +
-                                        "<br>Phone Number: " + props.phone +
-                                        "<br>Take me to the <a target='blank' href=" + "'" + props.website + "''" + ">website</a>.</h4>" // add website
-                                        );
-                        layer.on('mouseover', function (e) {
-                          this.openPopup();
-                        });
-                    })
-    /*
-                    // designate the layers as overlays
-                    var overlays = {
-                      "Auto Shops": cars
-                    };
-
-                    // all done with the layers, add them to layer control
-                    L.control.layers(null, overlays, {
-                      collapsed: false,
-                    }).addTo(map);
-    */
   </script>
 </body>
 
