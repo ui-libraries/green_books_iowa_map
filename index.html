@@ -328,10 +328,10 @@
 			maxZoom: 20
 		});
 		var overmap2 = L.tileLayer('iowa-tiles-1950/{z}/{x}/{y}.png', {
-			tms: true, 
-			opacity: 0.7, 
-			attribution: "", 
-			minZoom: 5, 
+			tms: true,
+			opacity: 0.7,
+			attribution: "",
+			minZoom: 5,
 			maxZoom: 10
 		});
 		var overmap3 = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
@@ -357,7 +357,7 @@
 			//layers: [overmap1]
 			maxZoom: 13,
 			tap:false
-		}).setView([42.0667, -93.4], 8);
+		}).setView([42.0667, -93.4], 7);
 
 		historic.addTo(map);
 /*
