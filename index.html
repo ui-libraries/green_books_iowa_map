@@ -1,0 +1,1015 @@
+<!doctype html>
+<html lang="en" class="no-js">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- leaflet css -->
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin="" />
+	<!-- fonts -->
+	<link href="https://fonts.googleapis.com/css?family=Cutive+Mono|Merriweather:700|Muli:400,700&display=swap" rel="stylesheet">
+	<!-- for markers -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.10.2/css/all.css">
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.10.2/css/v4-shims.css">
+	<link rel="stylesheet" href="css/leaflet.extra-markers.min.css">
+
+	<style type="text/css">
+
+		body, html {
+			margin:0;
+			padding:0;
+		}
+
+		/* Set map parameters */
+		#map {
+			position: fixed;
+			top: 0px;
+			bottom: 0px;
+			left: 0px;
+			width: 100%;
+		}
+
+		/* Set and style fonts for text in map */
+		h1 {
+			font-family: 'Lato', sans-serif;
+			font-size: 30px;
+			display: inline-block;
+			color: #ffff00;
+			margin-top: 0.5em;
+			margin-bottom: 0.0em;
+			margin-left: 0.5em;
+			margin-right: 0;
+			font-weight: normal;
+		}
+
+		h2 {
+			font-family: 'Merriweather', serif;
+			font-size: 13px;
+			display: inline-block;
+			color: #f7f4ea;
+			margin-top: 0.25em;
+			margin-bottom: 0.0em;
+			margin-left: 1.25em;
+			margin-right: 0;
+			font-weight: normal;
+		}
+
+		/* Set time slider styles */
+		#slider {
+			position: fixed;
+			height: 25px;
+			bottom: 20px;
+			left: 106px;
+			z-index: 700;
+			background-color: #FFFFFF;
+			border-radius: 3px;
+			box-shadow: 0px 0px 0px 2px rgba(0, 0, 0, 0.3);
+		}
+
+		/* Set temporal legend styles */
+		#temporal {
+			height: 25px;
+			width: 83px;
+			bottom: 10px;
+			z-index: 700;
+			background-color: #FFFFFF;
+			border-radius: 3px;
+			box-shadow: 0px 0px 0px 2px rgba(0, 0, 0, 0.3);
+		}
+
+		/* Set the styles for the text span in the temporal legend */
+		#temporal span {
+			font-family: 'Lato', sans-serif;
+			position: absolute;
+			font-size: 13px;
+			/*font-weight: bold;*/
+			display: inline-block;
+			line-height: 25px;
+			height: 25px;
+			left: 10px;
+		}
+
+		.resize {
+			width: 300px;
+			height: auto;
+		}
+
+		/* Dropdown Button */
+		.dropbtn {
+			font-family: 'Lato', sans-serif;
+			box-shadow: 0px 0px 0px 2px rgba(0, 0, 0, 0.2);
+      border-radius: 3px;
+			background-color: #3498DB;
+			color: white;
+			padding: 10px;
+			font-size: 14px;
+			white-space: nowrap;
+			max-width: content;
+			border: none;
+			cursor: pointer;
+			position: relative;
+			left: 54px;
+			top: 12px;
+		}
+
+		/* Dropdown button on hover & focus */
+		.dropbtn:hover,
+		.dropbtn:focus {
+			background-color: #2980B9;
+		}
+
+		/* The container <div> - needed to position the dropdown content */
+		.dropdown {
+			position: relative;
+			display: inline-block;
+		}
+
+		/* Dropdown Content (Hidden by Default) */
+		.dropdown-content {
+			display: none;
+			position: absolute;
+			top: 50px;
+			left: 54px;
+			background-color: #f1f1f1;
+			white-space: nowrap;
+			min-width: content;
+			box-shadow: 0px 0px 0px 2px rgba(0, 0, 0, 0.2);
+			border-radius: 3px;
+			z-index: 1000;
+		}
+
+		/* Links inside the dropdown */
+		.dropdown-content a {
+			font-family: 'Lato', sans-serif;
+			font-size: 12px;
+			color: black;
+			padding: 8px 8px 8px 8px;
+			text-decoration: none;
+			display: block;
+			box-shadow: 0px 0px 0px 0.5px rgba(0, 0, 0, 0.1);
+			cursor: pointer;
+		}
+
+		/* Change color of dropdown links on hover */
+		.dropdown-content a:hover {
+			background-color: #ddd
+		}
+
+		/* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
+		.show {
+			display: block;
+		}
+
+		@media only screen and (max-width: 1000px) {
+
+			/* Set time slider styles */
+			#slider {
+				position: fixed;
+				width: 98px;
+				height: 25px;
+				bottom: 20px;
+				left: 106px;
+				z-index: 500;
+				background-color: #FFFFFF;
+				border-radius: 3px;
+				box-shadow: 0px 0px 0px 2px rgba(0, 0, 0, 0.3);
+			}
+
+			.slider {
+				width: 93px;
+			}
+
+			/* Dropdown Button */
+			.dropbtn {
+				font-family: 'Lato', sans-serif;
+				box-shadow: 0px 0px 0px 2px rgba(0, 0, 0, 0.2);
+	      border-radius: 3px;
+				background-color: #3498DB;
+				color: white;
+				padding: 7px;
+				font-size: 11px;
+				white-space: nowrap;
+				max-width: content;
+				border: none;
+				cursor: pointer;
+				position: relative;
+				left: 54px;
+				top: 12px;
+			}
+
+			/* Dropdown button on hover & focus */
+			.dropbtn:hover,
+			.dropbtn:focus {
+				background-color: #2980B9;
+			}
+
+			/* The container <div> - needed to position the dropdown content */
+			.dropdown {
+				position: relative;
+				display: inline-block;
+			}
+
+			/* Dropdown Content (Hidden by Default) */
+			.dropdown-content {
+				display: none;
+				position: absolute;
+				top: 40px;
+				left: 54px;
+				background-color: #f1f1f1;
+				white-space: nowrap;
+				min-width: content;
+				box-shadow: 0px 0px 0px 2px rgba(0, 0, 0, 0.2);
+				border-radius: 3px;
+				z-index: 1000;
+			}
+
+			/* Links inside the dropdown */
+			.dropdown-content a {
+				font-family: 'Lato', sans-serif;
+				font-size: 9px;
+				color: black;
+				padding: 5px 5px 5px 5px;
+				text-decoration: none;
+				display: block;
+				box-shadow: 0px 0px 0px 0.5px rgba(0, 0, 0, 0.1);
+				cursor: pointer;
+			}
+
+			/* Change color of dropdown links on hover */
+			.dropdown-content a:hover {
+				background-color: #ddd
+			}
+
+			/* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
+			.show {
+				display: block;
+			}
+
+			 .leaflet-control-layers-expanded {
+				 font-family: 'Lato', sans-serif;
+				 font-size: 10px;
+			 }
+
+		}
+	</style>
+
+	<title>Iowa Green Books Map</title>
+</head>
+
+<body>
+	<!-- map -->
+	<div id="map"></div>
+	<!-- dropdown menu -->
+	<div class="dropdown">
+		<button onclick="myFunction()" class="dropbtn">City Insets</button>
+		<div id="myDropdown" class="dropdown-content">
+			<a onclick="zoom2latLng1();">Cedar Rapids</a>
+			<a onclick="zoom2latLng2();">Clinton</a>
+			<a onclick="zoom2latLng3();">Council Bluffs</a>
+			<a onclick="zoom2latLng4();">Davenport</a>
+			<a onclick="zoom2latLng5();">Des Moines</a>
+			<a onclick="zoom2latLng6();">Dubuque</a>
+			<a onclick="zoom2latLng7();">Iowa City</a>
+			<a onclick="zoom2latLng8();">Keokuk</a>
+			<a onclick="zoom2latLng9();">Newton</a>
+			<a onclick="zoom2latLng10();">Ottumwa</a>
+			<a onclick="zoom2latLng11();">Sioux City</a>
+			<a onclick="zoom2latLng12();">Waterloo</a>
+			<a onclick="zoom2latLng13();">Main Map</a>
+		</div>
+	</div>
+	<!-- ui slider -->
+	<div id="slider" class="leaflet-control">
+		<!-- Use the first and last year of the time data as the min and max. Set the initial value as the first year. Set the steps at one year. -->
+		<input type="range" min="1939" max="1966" value="1939" step="1" class="slider" />
+	</div>
+	<!-- temporal legend -->
+	<div id='temporal'>
+		<!--<h5 class='txt-bold'><span id='span'></span></h5>-->
+		<span class='txt-bold' id='span'></span>
+	</div>
+	<!--</main>-->
+	<!-- leaflet js -->
+	<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+	<!-- for the markers -->
+	<script src="js/leaflet.extra-markers.min.js"></script>
+	<script src="js/jquery-2.1.1.js"></script>
+
+	<script>
+		// add mapbox historic road map tiles
+		var accessToken = 'pk.eyJ1IjoiamVib3dlMyIsImEiOiJja3YxMXN1dXk3cm1xMzJxNjQ1bDNnc2t4In0.hLhht9e9GzCLV9uOIl0q9A'; // enter Mapbox GitHub access token
+
+		/*
+				// use the Jawg Sunny base map - nice, clean, not fussy
+				var basemap = L.tileLayer('https://{s}.tile.jawg.io/jawg-sunny/{z}/{x}/{y}{r}.png?access-token=odaScIS8yTVoAy0mjYBoHMXXasRTvbpjrTyjwQiZutN3FU3WE82xJ6FyqbbglesB', {
+					attribution: '<a href="http://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank">&copy; <b>Jawg</b>Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+					minZoom: 0,
+					maxZoom: 22,
+					subdomains: 'abcd',
+					accessToken: 'odaScIS8yTVoAy0mjYBoHMXXasRTvbpjrTyjwQiZutN3FU3WE82xJ6FyqbbglesB'
+				}); // add the base map to the map;
+		*/
+		/*
+		var basemap = L.tileLayer('https://api.mapbox.com/styles/v1/jebowe3/ck6vfzgdu0its1imqxec1qskn/tiles/256/{z}/{x}/{y}@2x?access_token=' + accessToken);
+		var overmap1 = L.tileLayer('https://api.mapbox.com/styles/v1/jebowe3/ck788bszk0wt91imjbb16iy8l/tiles/256/{z}/{x}/{y}@2x?access_token=' + accessToken);
+		var overmap2 = L.tileLayer('https://api.mapbox.com/styles/v1/jebowe3/ck6vbdt990eiy1intt77mioei/tiles/256/{z}/{x}/{y}@2x?access_token=' + accessToken);
+		var overmap3 = L.tileLayer('https://api.mapbox.com/styles/v1/jebowe3/ck78dcwh52gq11io2ggxhtqtk/tiles/256/{z}/{x}/{y}@2x?access_token=' + accessToken);
+		*/
+
+		var basemap = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+			subdomains: 'abcd',
+			maxZoom: 20
+		});
+		var overmap1 = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+			subdomains: 'abcd',
+			maxZoom: 20
+		});
+		var overmap2 = L.tileLayer('iowa-tiles-1950/{z}/{x}/{y}.png', {
+			tms: true, 
+			opacity: 0.7, 
+			attribution: "", 
+			minZoom: 5, 
+			maxZoom: 10
+		});
+		var overmap3 = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+			subdomains: 'abcd',
+			maxZoom: 20
+		});
+
+		var insets1952 = L.tileLayer('inset_tiles/{z}/{x}/{y}.png', {tms: true}); // 1952 city inset maps
+
+		var insets = L.layerGroup([basemap, insets1952]);
+
+		var historic = L.tileLayer('');
+		var contemporary = L.tileLayer('');
+
+		// dummy base layers
+		var baseMaps = {
+			"Historic Road Maps": historic,
+			"Contemporary Map": contemporary
+		}
+
+		var map = L.map('map', {
+			//layers: [overmap1]
+			maxZoom: 13,
+			tap:false
+		}).setView([42.0667, -93.4], 8);
+
+		historic.addTo(map);
+/*
+		var baseMaps = {
+			"1940 Road Map": overmap1,
+			"1950 Road Map": overmap2,
+			"1960 Road Map": overmap3,
+			"Contemporary": basemap,
+			"City Insets": insets
+		};
+*/
+		// get the zoom value
+		var mapZoom = map.getZoom();
+
+		// define the value in the slider
+		let currentYear = $('.slider').val();
+
+		// call the zoomMap function
+		zoomMap(mapZoom, currentYear);
+
+		// on zoom...
+		map.on('zoomend', function() {
+			// get the zoom value
+			var mapZoom = map.getZoom();
+			// define the value in the slider
+			let currentYear = $('.slider').val();
+			// call the zoomMap function
+			zoomMap(mapZoom, currentYear);
+		});
+
+		/* START DROPDOWN CODE */
+		/* When the user clicks on the button,
+		toggle between hiding and showing the dropdown content */
+		function myFunction() {
+		  document.getElementById("myDropdown").classList.toggle("show");
+		};
+
+		// Close the dropdown menu if the user clicks outside of it
+		window.onclick = function(event) {
+		  if (!event.target.matches('.dropbtn')) {
+		    var dropdowns = document.getElementsByClassName("dropdown-content");
+		    var i;
+		    for (i = 0; i < dropdowns.length; i++) {
+		      var openDropdown = dropdowns[i];
+		      if (openDropdown.classList.contains('show')) {
+		        openDropdown.classList.remove('show');
+		      }
+		    }
+		  }
+		};
+		/* END DROPDOWN CODE */
+
+		// zoom to functions for inset dropdown
+		function zoom2latLng1() {
+			map.flyTo([41.983056, -91.668611], 13); // zoom to Cedar Rapids
+		};
+
+		function zoom2latLng2() {
+			map.flyTo([41.846944, -90.207222], 13); // zoom to Clinton
+		};
+
+		function zoom2latLng3() {
+			map.flyTo([41.253, -95.862], 13); // zoom to Council Bluffs
+		};
+
+		function zoom2latLng4() {
+			map.flyTo([41.543056, -90.590833], 13); // zoom to Davenport
+		};
+
+		function zoom2latLng5() {
+			map.flyTo([41.590833, -93.620833], 13); // zoom to Des Moines
+		};
+
+		function zoom2latLng6() {
+			map.flyTo([42.5, -90.69], 13); // zoom to Dubuque
+		};
+
+		function zoom2latLng7() {
+			map.flyTo([41.66, -91.53], 13); // zoom to Iowa City
+		};
+
+		function zoom2latLng8() {
+			map.flyTo([40.397222, -91.385], 13); // zoom to Keokuk
+		};
+
+		function zoom2latLng9() {
+			map.flyTo([41.698611, -93.046944], 13); // zoom to Newton
+		};
+
+		function zoom2latLng10() {
+			map.flyTo([41.013056, -92.414722], 13); // zoom to Ottumwa
+		};
+
+		function zoom2latLng11() {
+			map.flyTo([42.498056, -96.395556], 13); // zoom to Sioux City
+		};
+
+		function zoom2latLng12() {
+			map.flyTo([42.492436, -92.346161], 13); // zoom to Waterloo
+		};
+
+		function zoom2latLng13() {
+			map.flyTo([42.0667, -93.4], 8); // zoom out to Iowa
+		};
+
+		// Add a function to call in the icons
+		function getIcon(d) {
+			return d === "Automotives" ? 'fas fa-car' :
+				d === "Barber Shop" ? 'fas fa-cut' :
+				d === "Beauty Parlor" ? 'fas fa-cut' :
+				d === "Cafe" ? 'fas fa-coffee' :
+				d === "Drug Store" ? 'fas fa-prescription-bottle-alt' :
+				d === "Factory Tour" ? 'fas fa-industry' :
+				d === "Garage" ? 'fas fa-warehouse' :
+				d === "Hotel" ? 'fas fa-bed' :
+				d === "Motel" ? 'fas fa-bed' :
+				d === "Publication" ? 'far fa-newspaper' :
+				d === "Restaurant" ? 'fas fa-utensils' :
+				d === "Service Station" ? 'fas fa-burn' :
+				d === "Tailor" ? 'fas fa-tshirt' :
+				d === "Tavern" ? 'fas fa-beer' :
+				d === "Tourist Home" ? 'fas fa-suitcase' :
+				'rgba(0,0,0,0.0)'; // supported by Microsoft Edge
+		};
+
+		// Add a function to color the markers
+		function getColor(d) {
+			return d === "Automotives" ? 'purple' :
+				d === "Barber Shop" ? 'blue' :
+				d === "Beauty Parlor" ? 'blue' :
+				d === "Cafe" ? 'yellow' :
+				d === "Drug Store" ? 'red' :
+				d === "Factory Tour" ? 'blue' :
+				d === "Garage" ? 'green' :
+				d === "Hotel" ? 'green' :
+				d === "Motel" ? 'green' :
+				d === "Publication" ? 'blue' :
+				d === "Restaurant" ? 'yellow' :
+				d === "Service Station" ? 'orange' :
+				d === "Tailor" ? 'purple' :
+				d === "Tavern" ? 'blue' :
+				d === "Tourist Home" ? 'red' :
+				'rgba(0,0,0,0.0)'; // supported by Microsoft Edge
+		};
+
+		// add a scale bar
+		L.control.scale({
+			position: 'bottomright'
+		}).addTo(map);
+
+		// define empty layer groups for each type of amenity
+		const autos = L.layerGroup().addTo(map);
+		const barbers = L.layerGroup().addTo(map);
+		const parlors = L.layerGroup().addTo(map);
+		const cafes = L.layerGroup().addTo(map);
+		const druggists = L.layerGroup().addTo(map);
+		const factories = L.layerGroup().addTo(map);
+		const garages = L.layerGroup().addTo(map);
+		const hotels = L.layerGroup().addTo(map);
+		const motels = L.layerGroup().addTo(map);
+		const publications = L.layerGroup().addTo(map);
+		const restaurants = L.layerGroup().addTo(map);
+		const stations = L.layerGroup().addTo(map);
+		const tailors = L.layerGroup().addTo(map);
+		const taverns = L.layerGroup().addTo(map);
+		const homes = L.layerGroup().addTo(map);
+
+		// define the overlays
+		const overlays = {
+			"Auto Shops": autos,
+			"Barber Shops": barbers,
+			"Beauty Parlors": parlors,
+			"Cafes": cafes,
+			"Drug Stores": druggists,
+			"Factory Tours": factories,
+			"Garages": garages,
+			"Hotels": hotels,
+			"Motels": motels,
+			"Publications": publications,
+			"Restaurants": restaurants,
+			"Service Stations": stations,
+			"Tailors": tailors,
+			"Taverns": taverns,
+			"Tourist Homes": homes,
+		};
+
+		// all done with the layers, add them to layer control
+		if (document.body.clientWidth <= 1000) {
+			var isCollapsed = true;
+		} else {
+			var isCollapsed = false;
+		}
+
+		const controlLayers = L.control.layers(baseMaps, overlays, {
+			collapsed: isCollapsed
+		}).addTo(map);
+
+		const pointToLayerOpts = function(feature, ll) {
+			// return a marker
+			return L.marker(ll, {
+				icon: L.ExtraMarkers.icon({
+					icon: getIcon(feature.properties.Type),
+					prefix: 'fas',
+					markerColor: getColor(feature.properties.Type),
+					iconColor: 'white'
+				})
+			})
+		};
+
+		const onEachFeatureOpts = function(feature, layer) {
+			// define the layer feature properties
+			let props = layer.feature.properties;
+			// define the type attribute
+			let type = props.Type;
+			// define the year attribute
+			let year = props.Date;
+			// define popup image
+			if (props.Image != undefined) {
+				var pimage = "<br><img class='resize' src='" + props.Image + "'" + "/>" + '<br>Click <a href="' + props.Source + '" target="_blank">here</a> to visit the image source.<br>';
+			} else {
+				var pimage = '';
+			}
+			// bind a popup to the markers
+			layer.bindPopup("<b>" + props.Date + " Green Book" + "<br>" + props.Owner + "</b>" +
+				"<br>Amenity: " + props.Type +
+				"<br>Address: " + props.Address + // add website
+				pimage
+			);
+			/*
+			layer.on('mouseover', function(e) {
+				this.openPopup();
+			});
+			*/
+			// if the layer's year equals the selected year...
+			if (year == currentYear) {
+				if (type == "Automotives") {
+					autos.addLayer(layer);
+				}
+				if (type == "Barber Shop") {
+					barbers.addLayer(layer);
+				}
+				if (type == "Beauty Parlor") {
+					parlors.addLayer(layer);
+				}
+				if (type == "Cafe") {
+					cafes.addLayer(layer);
+				}
+				if (type == "Drug Store") {
+					druggists.addLayer(layer);
+				}
+				if (type == "Factory Tour") {
+					factories.addLayer(layer);
+				}
+				if (type == "Garage") {
+					garages.addLayer(layer);
+				}
+				if (type == "Hotel") {
+					hotels.addLayer(layer);
+				}
+				if (type == "Motel") {
+					motels.addLayer(layer);
+				}
+				if (type == "Publication") {
+					publications.addLayer(layer);
+				}
+				if (type == "Restaurant") {
+					restaurants.addLayer(layer);
+				}
+				if (type == "Service Station") {
+					stations.addLayer(layer);
+				}
+				if (type == "Tailor") {
+					tailors.addLayer(layer);
+				}
+				if (type == "Tavern") {
+					taverns.addLayer(layer);
+				}
+				if (type == "Tourist Home") {
+					homes.addLayer(layer);
+				}
+			}
+		};
+
+		// use jquery to load GeoJSON data
+		$.when(
+			$.getJSON("data/GreenBookPoints.geojson"),
+			// when the files are done loading,
+			// identify them with names and process them through a function
+		).done(function(greenBookPts) {
+
+			// initiate a leaflet GeoJSON layer with L.geoJson, feed it the data, and add to the map
+			const gbPts = L.geoJson(greenBookPts, {
+				// make a layer from points
+				pointToLayer: pointToLayerOpts, //end pointToLayer
+				// On each marker...
+				onEachFeature: onEachFeatureOpts, //end onEachFeature
+			});
+
+			// call functions defined below
+			sequenceUI(gbPts /*autoPts, barberPts, beautyPts, cafePts, drugPts, factoryPts, garagePts, hotelPts, motelPts, pubPts, restPts, servicePts, tailorPts, tavernPts, touristPts*/ ); // calls the time slider and sends the layer to it
+			createTemporalLegend(currentYear); // calls the createTemporalLegend function
+			updatePoints(gbPts, /*autoPts, barberPts, beautyPts, cafePts, drugPts, factoryPts, garagePts, hotelPts, motelPts, pubPts, restPts, servicePts, tailorPts, tavernPts, touristPts, */
+			currentYear); // calls the updatePoints function to update the points
+		});
+
+		// call the UI slider with a function called "sequenceUI"
+		function sequenceUI(gbPts /*autoPts, barberPts, beautyPts, cafePts, drugPts, factoryPts, garagePts, hotelPts, motelPts, pubPts, restPts, servicePts, tailorPts, tavernPts, touristPts*/ ) { // feed it the points data
+
+			// use the jQuery ajax method to get the slider element
+			$('.slider')
+				.on('input change', function() { // when the input changes...
+					let currentYear = $(this).val(); // identify the year selected with "currentYear"
+					let mapZoom = map.getZoom(); // get the zoom value
+					zoomMap(mapZoom, currentYear); // call the zoomMap function
+					createTemporalLegend(currentYear); // call the createTemporalLegend function
+					updatePoints(gbPts, /*autoPts, barberPts, beautyPts, cafePts, drugPts, factoryPts, garagePts, hotelPts, motelPts, pubPts, restPts, servicePts, tailorPts, tavernPts, touristPts, */
+					currentYear); // calls the updatePoints function to update the points data
+				});
+
+		}; // End sequenceUI function
+
+		// Add a temporal legend in sync with the UI slider
+		function createTemporalLegend(currentYear) { // feed it the selected year
+
+			// define the temporal legend with a Leaflet control
+			const temporalLegend = L.control({
+				position: 'bottomleft' // place the temporal legend at bottom left corner
+			});
+
+			// when added to the map
+			temporalLegend.onAdd = function(map) {
+
+				const div = L.DomUtil.get("temporal"); // get the div
+
+				// disable the mouse events
+				L.DomEvent.addListener(div, 'mousedown', function(e) {
+					L.DomEvent.stopPropagation(e);
+				});
+
+				return div; // return the div from the function
+
+			}
+
+			$('#temporal span').html("Year: " + currentYear); // change grade value to that currently selected by UI slider
+
+			temporalLegend.addTo(map); // add the temporal legend to the map
+
+		}; // End createTemporalLegend function
+
+		// Define updatePoints function and feed it the points data and the user-selected year
+		function updatePoints(gbPts, /*autoPts, barberPts, beautyPts, cafePts, drugPts, factoryPts, garagePts, hotelPts, motelPts, pubPts, restPts, servicePts, tailorPts, tavernPts, touristPts, */ currentYear) {
+
+			// access each layer in the points data
+			gbPts.eachLayer(function(layer) {
+
+				// define the point type
+				let type = layer.feature.properties.Type;
+
+				if (type == "Automotives") {
+					autos.addLayer(layer);
+				}
+				if (type == "Barber Shop") {
+					barbers.addLayer(layer);
+				}
+				if (type == "Beauty Parlor") {
+					parlors.addLayer(layer);
+				}
+				if (type == "Cafe") {
+					cafes.addLayer(layer);
+				}
+				if (type == "Drug Store") {
+					druggists.addLayer(layer);
+				}
+				if (type == "Factory Tour") {
+					factories.addLayer(layer);
+				}
+				if (type == "Garage") {
+					garages.addLayer(layer);
+				}
+				if (type == "Hotel") {
+					hotels.addLayer(layer);
+				}
+				if (type == "Motel") {
+					motels.addLayer(layer);
+				}
+				if (type == "Publication") {
+					publications.addLayer(layer);
+				}
+				if (type == "Restaurant") {
+					restaurants.addLayer(layer);
+				}
+				if (type == "Service Station") {
+					stations.addLayer(layer);
+				}
+				if (type == "Tailor") {
+					tailors.addLayer(layer);
+				}
+				if (type == "Tavern") {
+					taverns.addLayer(layer);
+				}
+				if (type == "Tourist Home") {
+					homes.addLayer(layer);
+				}
+
+			});
+
+			// for each layer in the layer groups...
+			autos.eachLayer(function(layer) {
+				// if the layer's year is not equal to the selected year...
+				if (layer.feature.properties.Date != currentYear) {
+					// remove the layer
+					autos.removeLayer(layer);
+				}
+			});
+			barbers.eachLayer(function(layer) {
+				// if the layer's year is not equal to the selected year...
+				if (layer.feature.properties.Date != currentYear) {
+					// remove the layer
+					barbers.removeLayer(layer);
+				}
+			});
+			parlors.eachLayer(function(layer) {
+				// if the layer's year is not equal to the selected year...
+				if (layer.feature.properties.Date != currentYear) {
+					// remove the layer
+					parlors.removeLayer(layer);
+				}
+			});
+			cafes.eachLayer(function(layer) {
+				// if the layer's year is not equal to the selected year...
+				if (layer.feature.properties.Date != currentYear) {
+					// remove the layer
+					cafes.removeLayer(layer);
+				}
+			});
+			druggists.eachLayer(function(layer) {
+				// if the layer's year is not equal to the selected year...
+				if (layer.feature.properties.Date != currentYear) {
+					// remove the layer
+					druggists.removeLayer(layer);
+				}
+			});
+			factories.eachLayer(function(layer) {
+				// if the layer's year is not equal to the selected year...
+				if (layer.feature.properties.Date != currentYear) {
+					// remove the layer
+					factories.removeLayer(layer);
+				}
+			});
+			garages.eachLayer(function(layer) {
+				// if the layer's year is not equal to the selected year...
+				if (layer.feature.properties.Date != currentYear) {
+					// remove the layer
+					garages.removeLayer(layer);
+				}
+			});
+			hotels.eachLayer(function(layer) {
+				// if the layer's year is not equal to the selected year...
+				if (layer.feature.properties.Date != currentYear) {
+					// remove the layer
+					hotels.removeLayer(layer);
+				}
+			});
+			motels.eachLayer(function(layer) {
+				// if the layer's year is not equal to the selected year...
+				if (layer.feature.properties.Date != currentYear) {
+					// remove the layer
+					motels.removeLayer(layer);
+				}
+			});
+			publications.eachLayer(function(layer) {
+				// if the layer's year is not equal to the selected year...
+				if (layer.feature.properties.Date != currentYear) {
+					// remove the layer
+					publications.removeLayer(layer);
+				}
+			});
+			restaurants.eachLayer(function(layer) {
+				// if the layer's year is not equal to the selected year...
+				if (layer.feature.properties.Date != currentYear) {
+					// remove the layer
+					restaurants.removeLayer(layer);
+				}
+			});
+			stations.eachLayer(function(layer) {
+				// if the layer's year is not equal to the selected year...
+				if (layer.feature.properties.Date != currentYear) {
+					// remove the layer
+					stations.removeLayer(layer);
+				}
+			});
+			tailors.eachLayer(function(layer) {
+				// if the layer's year is not equal to the selected year...
+				if (layer.feature.properties.Date != currentYear) {
+					// remove the layer
+					tailors.removeLayer(layer);
+				}
+			});
+			taverns.eachLayer(function(layer) {
+				// if the layer's year is not equal to the selected year...
+				if (layer.feature.properties.Date != currentYear) {
+					// remove the layer
+					taverns.removeLayer(layer);
+				}
+			});
+			homes.eachLayer(function(layer) {
+				// if the layer's year is not equal to the selected year...
+				if (layer.feature.properties.Date != currentYear) {
+					// remove the layer
+					homes.removeLayer(layer);
+				}
+			});
+
+		}; // End updatePoints function
+
+		// define a function that determines which map layer should be on
+		function zoomMap(x, y) {
+
+			if (x > 12) {
+				if (map.hasLayer(historic)) {
+					map.removeLayer(overmap1);
+					map.removeLayer(overmap2);
+					map.removeLayer(overmap3);
+					basemap.addTo(map);
+					insets.addTo(map);
+				} if (map.hasLayer(contemporary)) {
+					map.removeLayer(overmap1);
+					map.removeLayer(overmap2);
+					map.removeLayer(overmap3);
+					map.removeLayer(insets);
+					basemap.addTo(map);
+				};
+				map.on('baselayerchange', function() {
+					if (map.hasLayer(historic)) {
+						map.removeLayer(overmap1);
+						map.removeLayer(overmap2);
+						map.removeLayer(overmap3);
+						basemap.addTo(map);
+						insets.addTo(map);
+					} if (map.hasLayer(contemporary)) {
+						map.removeLayer(overmap1);
+						map.removeLayer(overmap2);
+						map.removeLayer(overmap3);
+						map.removeLayer(insets);
+						basemap.addTo(map);
+					}
+				});
+			} else if (x < 13 && y < 1950) {
+				if (map.hasLayer(historic)) {
+					map.removeLayer(insets);
+					map.removeLayer(basemap);
+					map.removeLayer(overmap2);
+					map.removeLayer(overmap3);
+					overmap1.addTo(map);
+				} if (map.hasLayer(contemporary)) {
+					map.removeLayer(overmap1);
+					map.removeLayer(overmap2);
+					map.removeLayer(overmap3);
+					map.removeLayer(insets);
+					basemap.addTo(map);
+				};
+				map.on('baselayerchange', function() {
+					if (map.hasLayer(historic)) {
+						map.removeLayer(insets);
+						map.removeLayer(basemap);
+						map.removeLayer(overmap2);
+						map.removeLayer(overmap3);
+						overmap1.addTo(map);
+					} if (map.hasLayer(contemporary)) {
+						map.removeLayer(overmap1);
+						map.removeLayer(overmap2);
+						map.removeLayer(overmap3);
+						map.removeLayer(insets);
+						basemap.addTo(map);
+					}
+				});
+			} else if (x < 13 && y < 1960 && y > 1949) {
+				if (map.hasLayer(historic)) {
+					map.removeLayer(insets);
+					map.removeLayer(basemap);
+					map.removeLayer(overmap1);
+					map.removeLayer(overmap3);
+					overmap2.addTo(map);
+				} if (map.hasLayer(contemporary)) {
+					map.removeLayer(overmap1);
+					map.removeLayer(overmap2);
+					map.removeLayer(overmap3);
+					map.removeLayer(insets);
+					basemap.addTo(map);
+				};
+				map.on('baselayerchange', function() {
+					if (map.hasLayer(historic)) {
+						map.removeLayer(insets);
+						map.removeLayer(basemap);
+						map.removeLayer(overmap1);
+						map.removeLayer(overmap3);
+						overmap2.addTo(map);
+					} if (map.hasLayer(contemporary)) {
+						map.removeLayer(overmap1);
+						map.removeLayer(overmap2);
+						map.removeLayer(overmap3);
+						map.removeLayer(insets);
+						basemap.addTo(map);
+					}
+				});
+			} else if (x < 13 && y < 1970 && y > 1959) {
+				if (map.hasLayer(historic)) {
+					map.removeLayer(insets);
+					map.removeLayer(basemap);
+					map.removeLayer(overmap1);
+					map.removeLayer(overmap2);
+					overmap3.addTo(map);
+				} if (map.hasLayer(contemporary)) {
+					map.removeLayer(overmap1);
+					map.removeLayer(overmap2);
+					map.removeLayer(overmap3);
+					map.removeLayer(insets);
+					basemap.addTo(map);
+				};
+				map.on('baselayerchange', function() {
+					if (map.hasLayer(historic)) {
+						map.removeLayer(insets);
+						map.removeLayer(basemap);
+						map.removeLayer(overmap1);
+						map.removeLayer(overmap2);
+						overmap3.addTo(map);
+					} if (map.hasLayer(contemporary)) {
+						map.removeLayer(overmap1);
+						map.removeLayer(overmap2);
+						map.removeLayer(overmap3);
+						map.removeLayer(insets);
+						basemap.addTo(map);
+					}
+				});
+			}
+/*
+			map.on('baselayerchange', function(e) {
+
+				if (map.hasLayer(historic)) {
+					console.log('historic');
+					console.log(y);
+				} if (map.hasLayer(contemporary)) {
+					console.log('contemporary');
+					console.log(y);
+				}
+
+			});
+*/
+		}; // End zoomMap function
+
+	</script>
+
+</body>
+
+</html>
